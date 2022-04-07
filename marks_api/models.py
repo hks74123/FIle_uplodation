@@ -9,5 +9,7 @@ class Student_data(models.Model):
 
     def __str__(self):
         return self.name
-   
+
+class Data_file(models.Model):
+    data_csv = models.FileField(upload_to='media/imgs', null=True,blank=True)
   
