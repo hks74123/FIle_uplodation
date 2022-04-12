@@ -12,4 +12,7 @@ class Student_data(models.Model):
 
 class Data_file(models.Model):
     data_csv = models.FileField(upload_to='media/imgs', null=True,blank=True)
+    existingPath = models.CharField(unique=True, max_length=100)
+    name = models.CharField(max_length=50)
+    eof = models.BooleanField()
   
