@@ -24,14 +24,14 @@ class InsertStudentData(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         #Validating file data
-        file = serializer.validated_data['file']
+        api_file = serializer.validated_data['file']
         
         #reading file
-        reader = pd.read_csv(file)
+        file_reader = pd.read_csv(api_file)
         save_file = Data_file(data_csv = request.FILES['file'])
         save_file.save() 
         #Saving Content of file to database 
-        for _, row in reader.iterrows():
+        for _, row in file_reader.iterrows():
             new_file = Student_data(
                        id = row['id'],
                        name= row["Name"],
@@ -50,47 +50,47 @@ class Get_chunk_files(generics.CreateAPIView):
     # Handeling the PUT requests
     def put(self, request, *args, **kwargs):
         # Getting the details that are recived from api
-        file = request.FILES['file'].read()
-        fileName= request.POST['filename']
-        existingPath = request.POST['existingPath']
-        end = request.POST['end']
-        nextSlice = request.POST['nextSlice']
+        api_file = request.FILES['file'].read()
+        file_name= request.POST['filename']
+        existing_path = request.POST['existingPath']
+        file_end = request.POST['end']
+        next_slice = request.POST['nextSlice']
 
         # Validating the api data
-        if file=="" or fileName=="" or existingPath=="" or end=="" or nextSlice=="":
+        if api_file=="" or file_name=="" or existing_path=="" or file_end=="" or next_slice=="":
             res = JsonResponse({'data':'Invalid Request'})
             return res
         else:
-            if existingPath == 'null':
+            if existing_path == 'null':
                 # Uploading and setting the path of file
-                path = 'media/' + fileName
+                path = 'media/' + file_name
                 with open(path, 'wb+') as destination: 
-                    destination.write(file)
+                    destination.write(api_file)
                 
                 # Creating a model instance of Data_file
                 FileFolder = Data_file()     
-                FileFolder.existingPath = fileName
-                FileFolder.eof = end
-                FileFolder.name = fileName
+                FileFolder.existingPath = file_name
+                FileFolder.eof = file_end
+                FileFolder.name = file_name
                 FileFolder.save()
-                if int(end):
-                    res = JsonResponse({'data':'Uploaded Successfully','existingPath': fileName})
+                if int(file_end):
+                    res = JsonResponse({'data':'Uploaded Successfully','existingPath': file_name})
                 else:
-                    res = JsonResponse({'existingPath': fileName})
+                    res = JsonResponse({'existingPath': file_name})
                 return res
 
             else:
-                path = 'media/' + existingPath
-                model_id = Data_file.objects.get(existingPath=existingPath)
-                if model_id.name == fileName:
+                path = 'media/' + existing_path
+                model_id = Data_file.objects.get(existingPath=existing_path)
+                if model_id.name == file_name:
                     if not model_id.eof:
                         # Adding Chunks to existing file
                         with open(path, 'ab+') as destination: 
-                            destination.write(file)
-                        if int(end):
+                            destination.write(api_file)
+                        if int(file_end):
                             # At end of the file saving it's path and details to database
-                            model_id.data_csv = f'/{fileName}'
-                            model_id.eof = int(end)
+                            model_id.data_csv = f'/{file_name}'
+                            model_id.eof = int(file_end)
                             model_id.save()
                             res = JsonResponse({'data':'Uploaded Successfully','existingPath':model_id.existingPath})
                         else:
