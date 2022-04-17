@@ -37,5 +37,6 @@ with open(api_file, 'rb') as f:
         )
         if(next_chunk<file_size):
             dictionary = ast.literal_eval(res.text)
-            existingPath = dictionary['existingPath']
+            existing_path = dictionary['existingPath']
             start = next_chunk
+            
